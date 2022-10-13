@@ -16,9 +16,9 @@ require __DIR__ . './wc.php';
 
 // print_r($wc);exit;
 
-$columnas[]="$tabla.id, $tabla.recid, $tabla.referencia, $tabla.usuario, $tabla.empresa, $tabla.asignado, $tabla.estado, $tabla.prioridad, $tabla.modulo, $tabla.tipo, $tabla.proyecto, $tabla.leido, $tabla.respuesta, $tabla.fecha, $tabla.fecha_mod, $tabla.fecha_cierre "; // Columnas de Ticket
+$columnas[] = "$tabla.id, $tabla.recid, $tabla.referencia, $tabla.usuario, $tabla.empresa, $tabla.asignado, $tabla.estado, $tabla.prioridad, $tabla.modulo, $tabla.tipo, $tabla.proyecto, $tabla.leido, $tabla.respuesta, $tabla.fecha, $tabla.fecha_mod, $tabla.fecha_cierre "; // Columnas de Ticket
 
-$tablaJoin = 'usuarios'; 
+$tablaJoin = 'usuarios';
 $join .= " INNER JOIN $tablaJoin ON $tabla.usuario = $tablaJoin.uid";
 $columnas[] = "$tablaJoin.nombre, $tablaJoin.apellido, $tablaJoin.mail, $tablaJoin.perfil as 'perfil_user'"; // Columnas de usuarios de creacion de ticket
 
@@ -46,7 +46,7 @@ $tablaJoin = 'proyectos';
 $join .= " LEFT JOIN $tablaJoin ON $tabla.proyecto = $tablaJoin.id";
 $columnas[] = "$tablaJoin.nombre AS 'proyectoStr', $tablaJoin.descripcion AS 'proyectoDesc', $tablaJoin.comentarios AS 'proyectoComent'"; //  Columnas de proyecto asociado al ticket
 
-$columnas = implode(',', $columnas); 
+$columnas = implode(',', $columnas);
 $query = "SELECT $columnas FROM $tabla $join WHERE $tabla.id > 0";
 $queryCount = "SELECT count(1) as 'count' FROM $tabla $join WHERE $tabla.id > 0";
 
@@ -81,6 +81,12 @@ foreach ($stmt as $v) {
             "mail"   => trim($v['mail']),
             "perfil" => intval($v['perfil_user']),
         );
+        if ($dp['header']) {
+            $usuarioHeader = array(
+                "id"     => intval($v['usuario']),
+                "str"    => trim($v['nombre'] . ' ' . $v['apellido']),
+            );
+        }
     }
     $modulo = array();
     if ($v['modulo']) {
@@ -104,6 +110,12 @@ foreach ($stmt as $v) {
             "mail"   => ($v['mailAsign']),
             "perfil" => intval($v['perfil_asign']),
         );
+        if ($dp['header']) {
+            $asignadoHeader = array(
+                "id"  => intval($v['asignado']),
+                "str" => trim($v['nombreAsign'] . ' ' . $v['apellidoAsign']),
+            );
+        }
     }
     $prioridad = array();
     if ($v['prioridad']) {
@@ -124,42 +136,69 @@ foreach ($stmt as $v) {
             "pausa"   => intval($v['estadoPausa']),
             "recid"   => ($v['recidEstado']),
         );
+        if ($dp['header']) {
+            $estadoHeader = array(
+                "id"      => intval($v['estado']),
+                "str"     => trim($v['estadoStr']),
+                "bg"      => trim('#' . $v['bgcolor']),
+                "tx"      => trim('#' . $v['txcolor']),
+            );
+        }
     }
     $EdadStr = calculaEdadStr($v['fecha']);
     $EdadStrC = '';
-    if ($v['fecha_cierre']!='0000-00-00 00:00:00') {
+    if ($v['fecha_cierre'] != '0000-00-00 00:00:00') {
         $EdadStrC = calculaEdadStr($v['fecha_cierre']);
     }
     $Duracion = '';
-    if ($v['fecha_cierre'] !='0000-00-00 00:00:00') {
-        $Duracion = calculaEdadStrDiff($v['fecha'],$v['fecha_cierre']);
+    if ($v['fecha_cierre'] != '0000-00-00 00:00:00') {
+        $Duracion = calculaEdadStrDiff($v['fecha'], $v['fecha_cierre']);
     }
     $EdadModC = '';
-    if ($v['fecha_mod'] !='0000-00-00 00:00:00') {
+    if ($v['fecha_mod'] != '0000-00-00 00:00:00') {
         $EdadModC = calculaEdadStr($v['fecha_mod']);
     }
-    
-    $data[] = array(
-        "ID"    => intval($v['id']), // numero de ticket
-        "Recid" => $v['recid'], // recid del ticket
-        "Refer" => trim($v['referencia']), // referencia del ticket
-        "Fecha" => $v['fecha'], // fecha de carga del ticket
-        "Edad" => $EdadStr, // fecha de carga del ticket
-        "User"  => $usuario, // usuario de creacion del ticket
-        "Empre" => $empresa, // empresa de creacion del ticket
-        "Asign" => $asignado, // responsable asignado del ticket
-        "Estad" => $estado, // estado del ticket
-        "Prior" => $prioridad, // prioridad del ticket
-        "Modul" => $modulo, // modulo cargado del ticket
-        "Proye" => $proyecto, // proyecto asignado del ticket
-        "Tipo"  => intval($v['tipo']), // tipo de ticket
-        "Respo" => intval($v['respuesta']), // estado de respuesta del ticket 0 = por responder; 1 = eserando respuesta
-        "FechM" => $v['fecha_mod'], // lastupdate del ticket
-        "FechC" => $v['fecha_cierre'], // fecha de cierre del ticket
-        "EdadM" => $EdadModC, // Edad desde fecha de cierre del ticket
-        "EdadC" => $EdadStrC, // Edad desde fecha de cierre del ticket
-        "Tiempo" => $Duracion, // duración del ticket
-    );
+    if ($dp['header']) {
+        $data[] = array(
+            "ID"     => intval($v['id']), // numero de ticket
+            "Recid"  => $v['recid'], // recid del ticket
+            "Refer"  => trim($v['referencia']), // referencia del ticket
+            "Fecha"  => $v['fecha'], // fecha de carga del ticket
+            "User"   => $usuarioHeader,
+            "Asign"  => $asignadoHeader,
+            "esta"   => $estadoHeader,
+            "Prior" => $prioridad, // prioridad del ticket
+            "cierra" => intval($v['estadoCierra']),
+            "pausa"  => intval($v['estadoPausa']),
+            "FechM"  => $v['fecha_mod'], // lastupdate del ticket
+            "FechC"  => $v['fecha_cierre'], // fecha de cierre del ticket
+            "EdadM"  => $EdadModC, // Edad desde fecha de cierre del ticket
+            "EdadC"  => $EdadStrC, // Edad desde fecha de cierre del ticket
+            "Tiempo" => $Duracion, // duración del ticket
+        );
+    } else {
+        $data[] = array(
+            "ID"    => intval($v['id']), // numero de ticket
+            "Recid" => $v['recid'], // recid del ticket
+            "Refer" => trim($v['referencia']), // referencia del ticket
+            "Fecha" => $v['fecha'], // fecha de carga del ticket
+            "Edad" => $EdadStr, // fecha de carga del ticket
+            "User"  => $usuario, // usuario de creacion del ticket
+            "Empre" => $empresa, // empresa de creacion del ticket
+            "Asign" => $asignado, // responsable asignado del ticket
+            "Estad" => $estado, // estado del ticket
+            "Prior" => $prioridad, // prioridad del ticket
+            "Modul" => $modulo, // modulo cargado del ticket
+            "Proye" => $proyecto, // proyecto asignado del ticket
+            "Tipo"  => intval($v['tipo']), // tipo de ticket
+            "Respo" => intval($v['respuesta']), // estado de respuesta del ticket 0 = por responder; 1 = eserando respuesta
+            "FechM" => $v['fecha_mod'], // lastupdate del ticket
+            "FechC" => $v['fecha_cierre'], // fecha de cierre del ticket
+            "EdadM" => $EdadModC, // Edad desde fecha de cierre del ticket
+            "EdadC" => $EdadStrC, // Edad desde fecha de cierre del ticket
+            "Tiempo" => $Duracion, // duración del ticket
+        );
+    }
 }
 
 if (empty($stmt)) {

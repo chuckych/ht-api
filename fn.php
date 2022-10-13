@@ -6,7 +6,7 @@ $time_start = timeStart(); // Inicio
 $pathLog  = __DIR__ . '/logs/'; // path de Logs Api
 cleanFile($pathLog, 1, '.log'); // Elimina logs de los ultimos 7 días.
 $iniData = (getIni(__DIR__ . '/data.php'));
-
+// print_r($iniData).exit;
 $_SERVER['HTTP_TOKEN'] = $_SERVER['HTTP_TOKEN'] ?? '';
 $dataC = checkToken($_SERVER['HTTP_TOKEN'], $iniData); // valida el token
 
@@ -156,19 +156,20 @@ function checkToken($token, $iniData = array())
                 $data = array(
                     $v
                 );
+                return $data[0];
                 break;
-            } else {
-                http_response_code(200);
-                (response(array(), 0, 'Invalid Token', 200, timeStart(), 0, 0));
-                exit;
             }
         }
+        $r = 'Invalid Token';
+        http_response_code(200);
+        (response(array(), 0, $r, 200, timeStart(), 0, 0));
+        exit;
     } else {
         http_response_code(400);
         (response(array(), 0, 'Required Data Ini', 400, timeStart(), 0, 0));
         exit;
     }
-    return $data[0];
+    return false;
 }
 /**
  * 
@@ -698,58 +699,58 @@ function calculaDiff($f1, $f2)
 function calculaEdadStr($fecha)
 {
     if ($fecha) {
-        $Edad ='';
+        $Edad = '';
         $anios = intval(calculaEdad(($fecha))->format('%y'));
         $meses = intval(calculaEdad(($fecha))->format('%m'));
         $dias  = intval(calculaEdad(($fecha))->format('%d'));
         $horas = intval(calculaEdad(($fecha))->format('%h'));
         $min   = intval(calculaEdad(($fecha))->format('%i'));
-    
+
         if ($anios) {
-            $Edad  .= ($anios > 1) ? "$anios años " : "$anios año "; 
+            $Edad  .= ($anios > 1) ? "$anios años " : "$anios año ";
         }
         if ($meses) {
-            $Edad  .= ($meses > 1) ? "$meses meses " : "$meses mes "; 
+            $Edad  .= ($meses > 1) ? "$meses meses " : "$meses mes ";
         }
         if ($dias) {
-            $Edad  .= ($dias > 1) ? "$dias días " : "$dias día "; 
+            $Edad  .= ($dias > 1) ? "$dias días " : "$dias día ";
         }
         if ($horas) {
-            $Edad  .= ($horas > 1) ? $horas.'h ': $horas.'h '; 
+            $Edad  .= ($horas > 1) ? $horas . 'h ' : $horas . 'h ';
         }
         if ($min) {
-            $Edad  .= ($min > 1) ? $min.'m' : $min.'m'; 
+            $Edad  .= ($min > 1) ? $min . 'm' : $min . 'm';
         }
-            return trim($Edad);
+        return trim($Edad);
     }
     return '';
 }
 function calculaEdadStrDiff($f1, $f2)
 {
     if ($f1 && $f2) {
-        $Edad ='';
-        $anios = intval(calculaDiff($f1,$f2)->format('%y'));
-        $meses = intval(calculaDiff($f1,$f2)->format('%m'));
-        $dias  = intval(calculaDiff($f1,$f2)->format('%d'));
-        $horas = intval(calculaDiff($f1,$f2)->format('%h'));
-        $min   = intval(calculaDiff($f1,$f2)->format('%i'));
-    
+        $Edad = '';
+        $anios = intval(calculaDiff($f1, $f2)->format('%y'));
+        $meses = intval(calculaDiff($f1, $f2)->format('%m'));
+        $dias  = intval(calculaDiff($f1, $f2)->format('%d'));
+        $horas = intval(calculaDiff($f1, $f2)->format('%h'));
+        $min   = intval(calculaDiff($f1, $f2)->format('%i'));
+
         if ($anios) {
-            $Edad  .= ($anios > 1) ? "$anios años " : "$anios año "; 
+            $Edad  .= ($anios > 1) ? "$anios años " : "$anios año ";
         }
         if ($meses) {
-            $Edad  .= ($meses > 1) ? "$meses meses " : "$meses mes "; 
+            $Edad  .= ($meses > 1) ? "$meses meses " : "$meses mes ";
         }
         if ($dias) {
-            $Edad  .= ($dias > 1) ? "$dias días " : "$dias día "; 
+            $Edad  .= ($dias > 1) ? "$dias días " : "$dias día ";
         }
         if ($horas) {
-            $Edad  .= ($horas > 1) ? $horas.'h ': $horas.'h '; 
+            $Edad  .= ($horas > 1) ? $horas . 'h ' : $horas . 'h ';
         }
         if ($min) {
-            $Edad  .= ($min > 1) ? $min.'m' : $min.'m'; 
+            $Edad  .= ($min > 1) ? $min . 'm' : $min . 'm';
         }
-            return trim($Edad);
+        return trim($Edad);
     }
     return '';
 }

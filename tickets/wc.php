@@ -71,6 +71,9 @@ $dp['desdeDias'] = vp($dp['desdeDias'], 'desdeDias', 'int', 4);
 $dp['hastaDias'] = ($dp['hastaDias']) ?? '';
 $dp['hastaDias'] = vp($dp['hastaDias'], 'hastaDias', 'int', 4);
 
+$dp['header'] = ($dp['header']) ?? '';
+$dp['header'] = vp($dp['header'], 'header', 'int01', 1);
+
 $arrDP = array(
     'id'         => $dp['id'], // ID de pedido {int} {array}
     'recid'      => $dp['recid'], // recid de pedido {int} {array}
