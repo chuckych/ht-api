@@ -14,10 +14,11 @@ $dataC = checkToken($_SERVER['HTTP_TOKEN'], $iniData); // valida el token
  * Datos de la cuenta
  */
 $dataCompany  = array(
-    'host'        => $dataC['DBHost'],
-    'user'        => $dataC['DBUser'],
-    'pass'        => $dataC['DBPass'],
-    'db'          => $dataC['DBName'],
+    'host'     => $dataC['DBHost'],
+    'user'     => $dataC['DBUser'],
+    'pass'     => $dataC['DBPass'],
+    'db'       => $dataC['DBName'],
+    'homehost' => $dataC['host'],
 );
 
 // print_r($dataCompany).exit;

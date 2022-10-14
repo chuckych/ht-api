@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] != 'POST' && $_SERVER['REQUEST_METHOD'] != 'GET')
     exit;
 }
 
-require __DIR__ . './wc.php';
+require __DIR__ . '/wc.php';
 
 // print_r($wc);exit;
 
@@ -166,15 +166,16 @@ foreach ($stmt as $v) {
             "Fecha"  => $v['fecha'], // fecha de carga del ticket
             "User"   => $usuarioHeader,
             "Asign"  => $asignadoHeader,
-            "esta"   => $estadoHeader,
+            "Estado"   => $estadoHeader,
             "Prior" => $prioridad, // prioridad del ticket
-            "cierra" => intval($v['estadoCierra']),
-            "pausa"  => intval($v['estadoPausa']),
+            "Cierra" => intval($v['estadoCierra']),
+            "Pausa"  => intval($v['estadoPausa']),
             "FechM"  => $v['fecha_mod'], // lastupdate del ticket
             "FechC"  => $v['fecha_cierre'], // fecha de cierre del ticket
             "EdadM"  => $EdadModC, // Edad desde fecha de cierre del ticket
             "EdadC"  => $EdadStrC, // Edad desde fecha de cierre del ticket
             "Tiempo" => $Duracion, // duración del ticket
+            "link" => $dataCompany['homehost']."ticket/estado/?t=".$v['recid']."@".$v['id']
         );
     } else {
         $data[] = array(
@@ -186,10 +187,12 @@ foreach ($stmt as $v) {
             "User"  => $usuario, // usuario de creacion del ticket
             "Empre" => $empresa, // empresa de creacion del ticket
             "Asign" => $asignado, // responsable asignado del ticket
-            "Estad" => $estado, // estado del ticket
+            "Estado" => $estado, // estado del ticket
             "Prior" => $prioridad, // prioridad del ticket
             "Modul" => $modulo, // modulo cargado del ticket
             "Proye" => $proyecto, // proyecto asignado del ticket
+            "Cierra" => intval($v['estadoCierra']),
+            "Pausa"  => intval($v['estadoPausa']),
             "Tipo"  => intval($v['tipo']), // tipo de ticket
             "Respo" => intval($v['respuesta']), // estado de respuesta del ticket 0 = por responder; 1 = eserando respuesta
             "FechM" => $v['fecha_mod'], // lastupdate del ticket
@@ -197,6 +200,7 @@ foreach ($stmt as $v) {
             "EdadM" => $EdadModC, // Edad desde fecha de cierre del ticket
             "EdadC" => $EdadStrC, // Edad desde fecha de cierre del ticket
             "Tiempo" => $Duracion, // duración del ticket
+            "link" => $dataCompany['homehost']."ticket/estado/?t=".$v['recid']."@".$v['id']
         );
     }
 }
