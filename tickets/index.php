@@ -14,7 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] != 'POST' && $_SERVER['REQUEST_METHOD'] != 'GET')
 
 require __DIR__ . '/wc.php';
 
-// print_r($wc);exit;
 
 $columnas[] = "$tabla.id, $tabla.recid, $tabla.referencia, $tabla.usuario, $tabla.empresa, $tabla.asignado, $tabla.estado, $tabla.prioridad, $tabla.modulo, $tabla.tipo, $tabla.proyecto, $tabla.leido, $tabla.respuesta, $tabla.fecha, $tabla.fecha_mod, $tabla.fecha_cierre "; // Columnas de Ticket
 
@@ -59,7 +58,9 @@ $stmtCount = $dbApiQuery($queryCount)[0]['count'] ?? '';
 $query .= " ORDER BY $orderBy";
 $query .= " LIMIT " . $start . " ," . $length . " ";
 
-// print_r($query).exit;
+// http_response_code(200);
+// (response($query, 0, 'OK', 200, $time_start, 0, 0));
+// exit;
 
 $stmt = $dbApiQuery($query) ?? '';
 
@@ -105,10 +106,12 @@ foreach ($stmt as $v) {
     $asignado = array();
     if ($v['asignado']) {
         $asignado = array(
-            "id"     => intval($v['asignado']),
-            "str"    => trim($v['nombreAsign'] . ' ' . $v['apellidoAsign']),
-            "mail"   => ($v['mailAsign']),
-            "perfil" => intval($v['perfil_asign']),
+            "id"       => intval($v['asignado']),
+            "str"      => trim($v['nombreAsign'] . ' ' . $v['apellidoAsign']),
+            "nombre"   => trim($v['nombreAsign']),
+            "apellido" => trim($v['apellidoAsign']),
+            "mail"     => ($v['mailAsign']),
+            "perfil"   => intval($v['perfil_asign']),
         );
         if ($dp['header']) {
             $asignadoHeader = array(
@@ -170,8 +173,8 @@ foreach ($stmt as $v) {
             "Prior" => $prioridad, // prioridad del ticket
             "Cierra" => intval($v['estadoCierra']),
             "Pausa"  => intval($v['estadoPausa']),
-            "FechM"  => $v['fecha_mod'], // lastupdate del ticket
-            "FechC"  => $v['fecha_cierre'], // fecha de cierre del ticket
+            "FechM" => ($v['fecha_mod'] != '0000-00-00 00:00:00') ? $v['fecha_mod'] : '', // lastupdate del ticket
+            "FechC" => ($v['fecha_cierre'] != '0000-00-00 00:00:00') ? $v['fecha_cierre'] : '', // fecha de cierre del ticket
             "EdadM"  => $EdadModC, // Edad desde fecha de cierre del ticket
             "EdadC"  => $EdadStrC, // Edad desde fecha de cierre del ticket
             "Tiempo" => $Duracion, // duración del ticket
@@ -195,8 +198,8 @@ foreach ($stmt as $v) {
             "Pausa"  => intval($v['estadoPausa']),
             "Tipo"  => intval($v['tipo']), // tipo de ticket
             "Respo" => intval($v['respuesta']), // estado de respuesta del ticket 0 = por responder; 1 = eserando respuesta
-            "FechM" => $v['fecha_mod'], // lastupdate del ticket
-            "FechC" => $v['fecha_cierre'], // fecha de cierre del ticket
+            "FechM" => ($v['fecha_mod'] != '0000-00-00 00:00:00') ? $v['fecha_mod'] : '', // lastupdate del ticket
+            "FechC" => ($v['fecha_cierre'] != '0000-00-00 00:00:00') ? $v['fecha_cierre'] : '', // fecha de cierre del ticket
             "EdadM" => $EdadModC, // Edad desde fecha de cierre del ticket
             "EdadC" => $EdadStrC, // Edad desde fecha de cierre del ticket
             "Tiempo" => $Duracion, // duración del ticket

@@ -2,23 +2,27 @@
 // ini_set('memory_limit', '500M');
 header("Content-Type: application/json");
 header('Access-Control-Allow-Origin: *');
+header("X-Robots-Tag: noindex, nofollow", true);
 $time_start = timeStart(); // Inicio
 $pathLog  = __DIR__ . '/logs/'; // path de Logs Api
-cleanFile($pathLog, 1, '.log'); // Elimina logs de los ultimos 7 días.
+cleanFile($pathLog, 30, '.log'); // Elimina logs de los ultimos 7 días.
 $iniData = (getIni(__DIR__ . '/data.php'));
 // print_r($iniData).exit;
 $_SERVER['HTTP_TOKEN'] = $_SERVER['HTTP_TOKEN'] ?? '';
-$dataC = checkToken($_SERVER['HTTP_TOKEN'], $iniData); // valida el token
+$token = $_SERVER['HTTP_TOKEN'];
+$dataC = checkToken($token, $iniData); // valida el token
 
 /**
  * Datos de la cuenta
  */
 $dataCompany  = array(
-    'host'     => $dataC['DBHost'],
-    'user'     => $dataC['DBUser'],
-    'pass'     => $dataC['DBPass'],
-    'db'       => $dataC['DBName'],
-    'homehost' => $dataC['host'],
+    'host'         => $dataC['DBHost'],
+    'user'         => $dataC['DBUser'],
+    'pass'         => $dataC['DBPass'],
+    'db'           => $dataC['DBName'],
+    'homehost'     => $dataC['hostWeb'],
+    'hostApi'      => $dataC['hostApi'],
+    'emailCompany' => $dataC['emailCompany'],
 );
 
 // print_r($dataCompany).exit;
@@ -115,6 +119,14 @@ function dateTimeNow()
     // $t = date("Y-m-d H:i:s");
     $t = explode(" ", microtime());
     $t = date("Y-m-d H:i:s", $t[1]) . substr((string)$t[0], 1, 4);
+    return $t;
+}
+function dateNow()
+{
+    tz();
+    // $t = date("Y-m-d H:i:s");
+    $t = explode(" ", microtime());
+    $t = date("d/m/Y");
     return $t;
 }
 function errorReport()
@@ -673,7 +685,8 @@ function vp($value, $key, $type = 'str', $length = 1)
             }
         }
     }
-    return $value;
+    return ($value);
+    // return filter_var($value, FILTER_SANITIZE_STRING);
 }
 function isValidJSON($str)
 {
@@ -794,4 +807,97 @@ function wcFech($f1, $f2, $tabla, $col, $h1, $h2, $time_start)
         return " AND $tabla.$col BETWEEN '$f1' AND '$f2'";
     }
     return '';
+}
+function requestApi($url, $token, $payload, $timeout = 10)
+{
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+    // curl_setopt($ch, CURLOPT_SSLVERSION, CURL_SSLVERSION_SSLv3); // Force SSLv3 to fix Unknown SSL Protocol error
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        "Accept: */*",
+        'Content-Type: application/json',
+        "Token: $token",
+    ));
+    $file_contents = curl_exec($ch);
+    $curl_errno    = curl_errno($ch); // get error code
+    $curl_error    = curl_error($ch); // get error information
+    $pathLog = __DIR__ . '/logs/' . date('Ymd') . '_errorCurl.log'; // ruta del archivo de Log de errores
+    if ($curl_errno > 0) { // si hay error
+        $text = "cURL Error ($curl_errno): $curl_error"; // set error message
+        writeLog($text, $pathLog); // escribir en el log de errores el error
+    }
+    curl_close($ch);
+    if ($file_contents) {
+        return $file_contents;
+    } else {
+        writeLog('Error al obtener datos', $pathLog); // escribir en el log de errores el error
+        return false;
+    }
+}
+function group_by($key, $data)
+{
+    $result = array();
+
+    foreach ($data as $val) {
+        if (array_key_exists($key, $val)) {
+            $result[$val[$key]][] = $val;
+        } else {
+            $result[""][] = $val;
+        }
+    }
+
+    return $result;
+}
+function _group_by_keys($array, $keys = array())
+{
+    if (($array)) {
+        $return = array();
+        $append = (count($keys) > 1 ? "_" : null);
+        foreach ($array as $val) {
+            $final_key = "";
+            foreach ($keys as $theKey) {
+                $final_key .= $val[$theKey] . $append;
+            }
+            $return[$final_key][] = $val;
+        }
+        // return $return;
+        foreach ($return as $key => $value) {
+            $arrGroup2[] = array_map("unserialize", array_unique(array_map("serialize", $value)));
+        }
+
+        foreach ($arrGroup2 as $key => $value2) {
+            $arrGroup3[] = $value2[0];
+        }
+    } else {
+        $arrGroup3[] = array();
+    }
+    return $arrGroup3;
+}
+function checkDP($dp, $param, $time_start)
+{
+    if (empty($dp)) {
+        http_response_code(400);
+        (response(array(), 0, "Parametro $param es requerido", 400, $time_start, 0, 0));
+    }
+}
+function MinHora($Min)
+{
+	$segundos = $Min * 60;
+	$horas = floor($segundos / 3600);
+	$minutos = floor(($segundos - ($horas * 3600)) / 60);
+	$segundos = $segundos - ($horas * 3600) - ($minutos * 60);
+	$horas = str_pad($horas, 2, "0", STR_PAD_LEFT);
+	$minutos = str_pad($minutos, 2, "0", STR_PAD_LEFT);
+	$hora = $horas . ':' . $minutos;
+	switch ($hora) {
+		case '00:00':
+			$hora = "-";
+			break;
+	}
+	return $hora;
 }
